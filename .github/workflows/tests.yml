@@ -46,24 +46,39 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --prefer-dist --no-progress
-      - name: Debug JSON body
+      - name: Debug actual API request
         run: |
           php -r "
           require 'vendor/autoload.php';
           use Hitrov\OciConfig;
           use Hitrov\OciApi;
+          
           \$config = new OciConfig(
               getenv('OCI_REGION'),
               getenv('OCI_USER_ID'),
               getenv('OCI_TENANCY_ID'),
               getenv('OCI_KEY_FINGERPRINT'),
               getenv('OCI_PRIVATE_KEY_FILENAME'),
+              getenv('OCI_AVAILABILITY_DOMAIN'),
               getenv('OCI_SUBNET_ID'),
               getenv('OCI_IMAGE_ID'),
-              getenv('OCI_OCPUS'),
-              getenv('OCI_MEMORY_IN_GBS')
+              (int) getenv('OCI_OCPUS'),
+              (int) getenv('OCI_MEMORY_IN_GBS')
           );
-          echo json_encode(\$config, JSON_PRETTY_PRINT) . PHP_EOL;
+          
+          \$api = new OciApi();
+          
+          // Посмотрим что внутри createInstance
+          \$shape = getenv('OCI_SHAPE');
+          \$sshKey = getenv('OCI_SSH_PUBLIC_KEY');
+          \$ad = getenv('OCI_AVAILABILITY_DOMAIN');
+          
+          echo 'Shape: ' . var_export(\$shape, true) . PHP_EOL;
+          echo 'SSH key type: ' . gettype(\$sshKey) . PHP_EOL;
+          echo 'SSH key length: ' . strlen(\$sshKey) . PHP_EOL;
+          echo 'AD: ' . var_export(\$ad, true) . PHP_EOL;
+          echo 'OCPUS type: ' . gettype((int)getenv('OCI_OCPUS')) . PHP_EOL;
+          echo 'Memory type: ' . gettype((int)getenv('OCI_MEMORY_IN_GBS')) . PHP_EOL;
           "
         env:
           OCI_REGION: ${{ secrets.OCI_REGION }}
@@ -78,6 +93,7 @@ jobs:
           OCI_BOOT_VOLUME_SIZE_IN_GBS: ${{ secrets.OCI_BOOT_VOLUME_SIZE_IN_GBS }}
           OCI_SHAPE: ${{ secrets.OCI_SHAPE }}
           OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+          OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
       - name: Run test suite
         run: |
           vendor/bin/phpunit --color tests/
