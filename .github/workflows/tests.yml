@@ -46,6 +46,12 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --prefer-dist --no-progress
+      - name: Debug secrets
+        run: |
+          echo "SSH key length: $(echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' | wc -c)"
+          echo "SSH key lines: $(echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' | wc -l)"
+          echo "Region: ${{ secrets.OCI_REGION }}"
+          echo "OCPUS: ${{ secrets.OCI_OCPUS }}"
       - name: Run test suite
         run: |
           vendor/bin/phpunit --color tests/
