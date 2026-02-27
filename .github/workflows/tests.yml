@@ -27,6 +27,11 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
+      - name: Save private key to file
+        run: |
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > /home/runner/oci_private_key.pem
+          chmod 600 /home/runner/oci_private_key.pem
+
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
@@ -49,7 +54,7 @@ jobs:
           OCI_USER_ID: ${{ secrets.OCI_USER_ID }}
           OCI_TENANCY_ID: ${{ secrets.OCI_TENANCY_ID }}
           OCI_KEY_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
-          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          OCI_PRIVATE_KEY_FILENAME: /home/runner/oci_private_key.pem
           OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
           OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
           OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
