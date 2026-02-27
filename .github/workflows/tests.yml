@@ -46,30 +46,21 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --prefer-dist --no-progress
-      - name: Debug secrets
+      - name: Debug env vars
         run: |
-          echo "SSH key length: $(echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' | wc -c)"
-          echo "SSH key lines: $(echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' | wc -l)"
-          echo "Region: ${{ secrets.OCI_REGION }}"
-          echo "OCPUS: ${{ secrets.OCI_OCPUS }}"
-      - name: Debug private key
-        run: |
-          echo "Key lines: $(wc -l < /home/runner/oci_private_key.pem)"
-          echo "First line: $(head -1 /home/runner/oci_private_key.pem)"
-          echo "Last line: $(tail -1 /home/runner/oci_private_key.pem)"
-      - name: Save private key to file
-        run: |
-          cat > /home/runner/oci_private_key.pem << 'ENDOFKEY'
-          ${{ secrets.OCI_PRIVATE_KEY }}
-          ENDOFKEY
-          chmod 600 /home/runner/oci_private_key.pem
-          sed -i 's/^[[:space:]]*//' /home/runner/oci_private_key.pem
-      - name: Debug SSH key
-        run: |
-          echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' > /tmp/ssh_key_test.txt
-          echo "Starts with: $(cut -c1-7 /tmp/ssh_key_test.txt)"
-          echo "Contains spaces: $(grep -c ' ' /tmp/ssh_key_test.txt)"
-          hexdump -C /tmp/ssh_key_test.txt | head -3
+          echo "SHAPE: $OCI_SHAPE"
+          echo "SUBNET: ${OCI_SUBNET_ID:0:20}..."
+          echo "IMAGE: ${OCI_IMAGE_ID:0:20}..."
+          echo "OCPUS: $OCI_OCPUS"
+          echo "MEMORY: $OCI_MEMORY_IN_GBS"
+          echo "BOOT: $OCI_BOOT_VOLUME_SIZE_IN_GBS"
+        env:
+          OCI_SHAPE: ${{ secrets.OCI_SHAPE }}
+          OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
+          OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
+          OCI_OCPUS: ${{ secrets.OCI_OCPUS }}
+          OCI_MEMORY_IN_GBS: ${{ secrets.OCI_MEMORY_IN_GBS }}
+          OCI_BOOT_VOLUME_SIZE_IN_GBS: ${{ secrets.OCI_BOOT_VOLUME_SIZE_IN_GBS }}
       - name: Run test suite
         run: |
           vendor/bin/phpunit --color tests/
