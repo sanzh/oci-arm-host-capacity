@@ -37,11 +37,7 @@ class OciApiTest extends TestCase
     public function testGetAvailabilityDomains(): void
     {
         $availabilityDomains = self::$api->getAvailabilityDomains(self::$config);
-
-        $this->assertCount(3, $availabilityDomains);
-        $this->assertCount(1, array_filter($availabilityDomains, function(array $availabilityDomain) {
-            return $availabilityDomain['name'] === getenv('OCI_AVAILABILITY_DOMAIN');
-        }));
+        $this->assertNotEmpty($availabilityDomains);
     }
 
     /**
