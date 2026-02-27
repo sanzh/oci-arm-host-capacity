@@ -52,6 +52,18 @@ jobs:
           echo "SSH key lines: $(echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' | wc -l)"
           echo "Region: ${{ secrets.OCI_REGION }}"
           echo "OCPUS: ${{ secrets.OCI_OCPUS }}"
+      - name: Debug private key
+        run: |
+          echo "Key lines: $(wc -l < /home/runner/oci_private_key.pem)"
+          echo "First line: $(head -1 /home/runner/oci_private_key.pem)"
+          echo "Last line: $(tail -1 /home/runner/oci_private_key.pem)"
+      - name: Save private key to file
+        run: |
+          cat > /home/runner/oci_private_key.pem << 'ENDOFKEY'
+          ${{ secrets.OCI_PRIVATE_KEY }}
+          ENDOFKEY
+          chmod 600 /home/runner/oci_private_key.pem
+          sed -i 's/^[[:space:]]*//' /home/runner/oci_private_key.pem
       - name: Run test suite
         run: |
           vendor/bin/phpunit --color tests/
