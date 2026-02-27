@@ -46,51 +46,28 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --prefer-dist --no-progress
-      - name: Debug actual API request
+      - name: Show actual JSON body
         run: |
           php -r "
           require 'vendor/autoload.php';
-          use Hitrov\OciConfig;
-          use Hitrov\OciApi;
-          
-          \$config = new OciConfig(
-              getenv('OCI_REGION'),
-              getenv('OCI_USER_ID'),
-              getenv('OCI_TENANCY_ID'),
-              getenv('OCI_KEY_FINGERPRINT'),
-              getenv('OCI_PRIVATE_KEY_FILENAME'),
-              getenv('OCI_AVAILABILITY_DOMAIN'),
-              getenv('OCI_SUBNET_ID'),
-              getenv('OCI_IMAGE_ID'),
-              (int) getenv('OCI_OCPUS'),
-              (int) getenv('OCI_MEMORY_IN_GBS')
-          );
-          
-          \$api = new OciApi();
-          
-          // Посмотрим что внутри createInstance
-          \$shape = getenv('OCI_SHAPE');
           \$sshKey = getenv('OCI_SSH_PUBLIC_KEY');
+          \$shape = getenv('OCI_SHAPE');
           \$ad = getenv('OCI_AVAILABILITY_DOMAIN');
           
-          echo 'Shape: ' . var_export(\$shape, true) . PHP_EOL;
-          echo 'SSH key type: ' . gettype(\$sshKey) . PHP_EOL;
-          echo 'SSH key length: ' . strlen(\$sshKey) . PHP_EOL;
-          echo 'AD: ' . var_export(\$ad, true) . PHP_EOL;
-          echo 'OCPUS type: ' . gettype((int)getenv('OCI_OCPUS')) . PHP_EOL;
-          echo 'Memory type: ' . gettype((int)getenv('OCI_MEMORY_IN_GBS')) . PHP_EOL;
+          \$body = '{
+    \"metadata\": {
+        \"ssh_authorized_keys\": \"' . \$sshKey . '\"
+    },
+    \"shape\": \"' . \$shape . '\",
+    \"availabilityDomain\": \"' . \$ad . '\"
+}';
+          echo \$body . PHP_EOL;
+          echo PHP_EOL;
+          \$decoded = json_decode(\$body, true);
+          echo 'JSON valid: ' . (\$decoded ? 'YES' : 'NO') . PHP_EOL;
+          echo 'JSON error: ' . json_last_error_msg() . PHP_EOL;
           "
         env:
-          OCI_REGION: ${{ secrets.OCI_REGION }}
-          OCI_USER_ID: ${{ secrets.OCI_USER_ID }}
-          OCI_TENANCY_ID: ${{ secrets.OCI_TENANCY_ID }}
-          OCI_KEY_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
-          OCI_PRIVATE_KEY_FILENAME: /home/runner/oci_private_key.pem
-          OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
-          OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
-          OCI_OCPUS: ${{ secrets.OCI_OCPUS }}
-          OCI_MEMORY_IN_GBS: ${{ secrets.OCI_MEMORY_IN_GBS }}
-          OCI_BOOT_VOLUME_SIZE_IN_GBS: ${{ secrets.OCI_BOOT_VOLUME_SIZE_IN_GBS }}
           OCI_SHAPE: ${{ secrets.OCI_SHAPE }}
           OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
