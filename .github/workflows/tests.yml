@@ -64,6 +64,12 @@ jobs:
           ENDOFKEY
           chmod 600 /home/runner/oci_private_key.pem
           sed -i 's/^[[:space:]]*//' /home/runner/oci_private_key.pem
+      - name: Debug SSH key
+        run: |
+          echo '${{ secrets.OCI_SSH_PUBLIC_KEY }}' > /tmp/ssh_key_test.txt
+          echo "Starts with: $(cut -c1-7 /tmp/ssh_key_test.txt)"
+          echo "Contains spaces: $(grep -c ' ' /tmp/ssh_key_test.txt)"
+          hexdump -C /tmp/ssh_key_test.txt | head -3
       - name: Run test suite
         run: |
           vendor/bin/phpunit --color tests/
